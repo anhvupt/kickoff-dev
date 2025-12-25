@@ -1,305 +1,325 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kickoff App</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div class="app-container">
-    <header class="app-header">
-      <h1 class="app-title">Kickoff App</h1>
-      <p class="app-subtitle">Image Tools & Screenshot Capture</p>
-    </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kickoff Dev</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="app-header">
+        <h1 class="app-title">Kickoff Dev</h1>
+        <p class="app-subtitle">Image Tools & Screenshot Capture</p>
+      </header>
 
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="minimizer">
-        <span class="tab-icon">🖼️</span>
-        Image Minimizer
-      </button>
-      <button class="tab-btn" data-tab="screenshot">
-        <span class="tab-icon">📸</span>
-        Screenshot Capture
-      </button>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="minimizer">
+          <span class="tab-icon">🖼️</span>
+          Image Minimizer
+        </button>
+        <button class="tab-btn" data-tab="screenshot">
+          <span class="tab-icon">📸</span>
+          Screenshot Capture
+        </button>
+      </div>
+
+      <main class="app-main">
+        <!-- Image Minimizer Tab -->
+        <div class="tab-content active" id="minimizerTab">
+          <div class="feature-section">
+            <button id="selectImagesBtn" class="btn btn-primary">
+              <span class="btn-icon">📁</span>
+              Select Images
+            </button>
+
+            <div id="selectedImages" class="selected-images"></div>
+          </div>
+
+          <div
+            class="settings-section"
+            id="settingsSection"
+            style="display: none">
+            <div class="setting-group">
+              <label for="ratioSlider"
+                >Size Ratio: <span id="ratioValue">100%</span></label
+              >
+              <input
+                type="range"
+                id="ratioSlider"
+                min="10"
+                max="100"
+                value="100"
+                class="slider" />
+            </div>
+
+            <div class="setting-group">
+              <label for="qualitySlider"
+                >Quality: <span id="qualityValue">85</span></label
+              >
+              <input
+                type="range"
+                id="qualitySlider"
+                min="50"
+                max="100"
+                value="85"
+                class="slider" />
+            </div>
+
+            <button id="processBtn" class="btn btn-process">
+              <span class="btn-icon">⚡</span>
+              Process Images
+            </button>
+          </div>
+
+          <div
+            class="progress-section"
+            id="progressSection"
+            style="display: none">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p class="progress-text" id="progressText">Processing...</p>
+          </div>
+
+          <div
+            class="results-section"
+            id="resultsSection"
+            style="display: none">
+            <div class="results-info">
+              <h2>Processing Complete!</h2>
+              <p id="resultsSummary"></p>
+            </div>
+
+            <div class="action-buttons">
+              <button id="saveBtn" class="btn btn-success">
+                <span class="btn-icon">💾</span>
+                Save to Folder
+              </button>
+              <button id="replaceBtn" class="btn btn-warning">
+                <span class="btn-icon">🔄</span>
+                Replace Originals
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screenshot Capture Tab -->
+        <div class="tab-content" id="screenshotTab">
+          <div class="screenshot-container">
+            <!-- Single Capture Section -->
+            <div class="screenshot-section" id="singleCaptureSection">
+              <h2 class="section-title">Single Capture</h2>
+
+              <div class="screenshot-layout">
+                <div class="screenshot-form-column">
+                  <div class="form-group">
+                    <label for="screenshotUrl">URL</label>
+                    <input
+                      type="url"
+                      id="screenshotUrl"
+                      class="form-input"
+                      placeholder="https://example.com"
+                      required />
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="screenshotWidth">Width (px)</label>
+                      <input
+                        type="number"
+                        id="screenshotWidth"
+                        class="form-input"
+                        value="1200"
+                        min="100"
+                        max="4000" />
+                    </div>
+                    <div class="form-group">
+                      <label for="screenshotHeight">Height (px)</label>
+                      <input
+                        type="number"
+                        id="screenshotHeight"
+                        class="form-input"
+                        value="630"
+                        min="100"
+                        max="4000" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="screenshotWait">Wait Strategy</label>
+                    <select id="screenshotWait" class="form-input">
+                      <option value="load">load</option>
+                      <option value="domcontentloaded">domcontentloaded</option>
+                      <option value="networkidle0">networkidle0</option>
+                      <option value="networkidle2">networkidle2</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="screenshotExtraWait">Extra Wait (ms)</label>
+                    <input
+                      type="number"
+                      id="screenshotExtraWait"
+                      class="form-input"
+                      value="0"
+                      min="0"
+                      max="10000" />
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-checkbox">
+                      <input type="checkbox" id="screenshotFullPage" />
+                      <label for="screenshotFullPage">Full Page</label>
+                    </div>
+                    <div class="form-checkbox">
+                      <input type="checkbox" id="screenshotLight" />
+                      <label for="screenshotLight"
+                        >Light Mode (block images/CSS/fonts)</label
+                      >
+                    </div>
+                  </div>
+
+                  <button id="captureBtn" class="btn btn-primary">
+                    <span class="btn-icon">📸</span>
+                    <span id="captureBtnText">Capture</span>
+                  </button>
+
+                  <div
+                    id="screenshotError"
+                    class="error-alert"
+                    style="display: none"></div>
+                </div>
+
+                <div class="screenshot-preview-column">
+                  <div
+                    id="screenshotPreview"
+                    class="screenshot-preview"
+                    style="display: none">
+                    <h3>Preview</h3>
+                    <div class="preview-image-container">
+                      <img id="screenshotImage" alt="Screenshot preview" />
+                    </div>
+                    <div class="preview-actions">
+                      <button id="copyScreenshotBtn" class="btn btn-success">
+                        <span class="btn-icon">📋</span>
+                        Copy to Clipboard
+                      </button>
+                      <button
+                        id="downloadScreenshotBtn"
+                        class="btn btn-success">
+                        <span class="btn-icon">💾</span>
+                        Download PNG
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    id="screenshotPreviewPlaceholder"
+                    class="screenshot-preview-placeholder">
+                    <div class="placeholder-content">
+                      <span class="placeholder-icon">📸</span>
+                      <p>Captured screenshot will appear here</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Batch Capture Section -->
+            <div class="screenshot-section" id="batchCaptureSection">
+              <h2 class="section-title">Batch Capture</h2>
+
+              <div class="screenshot-layout">
+                <div class="screenshot-form-column">
+                  <div class="form-group">
+                    <label for="batchUrls">URLs (one per line)</label>
+                    <textarea
+                      id="batchUrls"
+                      class="form-input form-textarea"
+                      rows="6"
+                      placeholder="https://example.com&#10;https://google.com&#10;https://github.com"></textarea>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="batchWidth">Width (px)</label>
+                      <input
+                        type="number"
+                        id="batchWidth"
+                        class="form-input"
+                        value="1200" />
+                    </div>
+                    <div class="form-group">
+                      <label for="batchHeight">Height (px)</label>
+                      <input
+                        type="number"
+                        id="batchHeight"
+                        class="form-input"
+                        value="630" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="batchWait">Wait Strategy</label>
+                    <select id="batchWait" class="form-input">
+                      <option value="load">load</option>
+                      <option value="domcontentloaded">domcontentloaded</option>
+                      <option value="networkidle0">networkidle0</option>
+                      <option value="networkidle2">networkidle2</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="batchExtraWait">Extra Wait (ms)</label>
+                    <input
+                      type="number"
+                      id="batchExtraWait"
+                      class="form-input"
+                      value="0" />
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-checkbox">
+                      <input type="checkbox" id="batchFullPage" />
+                      <label for="batchFullPage">Full Page</label>
+                    </div>
+                    <div class="form-checkbox">
+                      <input type="checkbox" id="batchLight" />
+                      <label for="batchLight">Light Mode</label>
+                    </div>
+                  </div>
+
+                  <button id="captureBatchBtn" class="btn btn-primary">
+                    <span class="btn-icon">📸</span>
+                    <span id="captureBatchBtnText">Capture All</span>
+                  </button>
+                </div>
+
+                <div class="screenshot-preview-column">
+                  <div
+                    id="batchResults"
+                    class="batch-results"
+                    style="display: none">
+                    <h3 id="batchResultsTitle">Results</h3>
+                    <div id="batchResultsGrid" class="batch-results-grid"></div>
+                  </div>
+                  <div
+                    id="batchResultsPlaceholder"
+                    class="screenshot-preview-placeholder">
+                    <div class="placeholder-content">
+                      <span class="placeholder-icon">📋</span>
+                      <p>Batch capture results will appear here</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
 
-    <main class="app-main">
-      <!-- Image Minimizer Tab -->
-      <div class="tab-content active" id="minimizerTab">
-        <div class="feature-section">
-          <button id="selectImagesBtn" class="btn btn-primary">
-            <span class="btn-icon">📁</span>
-            Select Images
-          </button>
-          
-          <div id="selectedImages" class="selected-images"></div>
-        </div>
-
-        <div class="settings-section" id="settingsSection" style="display: none;">
-          <div class="setting-group">
-            <label for="ratioSlider">Size Ratio: <span id="ratioValue">100%</span></label>
-            <input 
-              type="range" 
-              id="ratioSlider" 
-              min="10" 
-              max="100" 
-              value="100" 
-              class="slider"
-            >
-          </div>
-
-          <div class="setting-group">
-            <label for="qualitySlider">Quality: <span id="qualityValue">85</span></label>
-            <input 
-              type="range" 
-              id="qualitySlider" 
-              min="50" 
-              max="100" 
-              value="85" 
-              class="slider"
-            >
-          </div>
-
-          <button id="processBtn" class="btn btn-process">
-            <span class="btn-icon">⚡</span>
-            Process Images
-          </button>
-        </div>
-
-        <div class="progress-section" id="progressSection" style="display: none;">
-          <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
-          <p class="progress-text" id="progressText">Processing...</p>
-        </div>
-
-        <div class="results-section" id="resultsSection" style="display: none;">
-          <div class="results-info">
-            <h2>Processing Complete!</h2>
-            <p id="resultsSummary"></p>
-          </div>
-          
-          <div class="action-buttons">
-            <button id="saveBtn" class="btn btn-success">
-              <span class="btn-icon">💾</span>
-              Save to Folder
-            </button>
-            <button id="replaceBtn" class="btn btn-warning">
-              <span class="btn-icon">🔄</span>
-              Replace Originals
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Screenshot Capture Tab -->
-      <div class="tab-content" id="screenshotTab">
-        <div class="screenshot-container">
-          <!-- Single Capture Section -->
-          <div class="screenshot-section" id="singleCaptureSection">
-            <h2 class="section-title">Single Capture</h2>
-            
-            <div class="screenshot-layout">
-              <div class="screenshot-form-column">
-                <div class="form-group">
-                  <label for="screenshotUrl">URL</label>
-                  <input 
-                    type="url" 
-                    id="screenshotUrl" 
-                    class="form-input" 
-                    placeholder="https://example.com"
-                    required
-                  >
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="screenshotWidth">Width (px)</label>
-                    <input 
-                      type="number" 
-                      id="screenshotWidth" 
-                      class="form-input" 
-                      value="1200"
-                      min="100"
-                      max="4000"
-                    >
-                  </div>
-                  <div class="form-group">
-                    <label for="screenshotHeight">Height (px)</label>
-                    <input 
-                      type="number" 
-                      id="screenshotHeight" 
-                      class="form-input" 
-                      value="630"
-                      min="100"
-                      max="4000"
-                    >
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label for="screenshotWait">Wait Strategy</label>
-                  <select id="screenshotWait" class="form-input">
-                    <option value="load">load</option>
-                    <option value="domcontentloaded">domcontentloaded</option>
-                    <option value="networkidle0">networkidle0</option>
-                    <option value="networkidle2">networkidle2</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="screenshotExtraWait">Extra Wait (ms)</label>
-                  <input 
-                    type="number" 
-                    id="screenshotExtraWait" 
-                    class="form-input" 
-                    value="0"
-                    min="0"
-                    max="10000"
-                  >
-                </div>
-
-                <div class="form-row">
-                  <div class="form-checkbox">
-                    <input type="checkbox" id="screenshotFullPage">
-                    <label for="screenshotFullPage">Full Page</label>
-                  </div>
-                  <div class="form-checkbox">
-                    <input type="checkbox" id="screenshotLight">
-                    <label for="screenshotLight">Light Mode (block images/CSS/fonts)</label>
-                  </div>
-                </div>
-
-                <button id="captureBtn" class="btn btn-primary">
-                  <span class="btn-icon">📸</span>
-                  <span id="captureBtnText">Capture</span>
-                </button>
-
-                <div id="screenshotError" class="error-alert" style="display: none;"></div>
-              </div>
-
-              <div class="screenshot-preview-column">
-                <div id="screenshotPreview" class="screenshot-preview" style="display: none;">
-                  <h3>Preview</h3>
-                  <div class="preview-image-container">
-                    <img id="screenshotImage" alt="Screenshot preview">
-                  </div>
-                  <div class="preview-actions">
-                    <button id="copyScreenshotBtn" class="btn btn-success">
-                      <span class="btn-icon">📋</span>
-                      Copy to Clipboard
-                    </button>
-                    <button id="downloadScreenshotBtn" class="btn btn-success">
-                      <span class="btn-icon">💾</span>
-                      Download PNG
-                    </button>
-                  </div>
-                </div>
-                <div id="screenshotPreviewPlaceholder" class="screenshot-preview-placeholder">
-                  <div class="placeholder-content">
-                    <span class="placeholder-icon">📸</span>
-                    <p>Captured screenshot will appear here</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Batch Capture Section -->
-          <div class="screenshot-section" id="batchCaptureSection">
-            <h2 class="section-title">Batch Capture</h2>
-            
-            <div class="screenshot-layout">
-              <div class="screenshot-form-column">
-                <div class="form-group">
-                  <label for="batchUrls">URLs (one per line)</label>
-                  <textarea 
-                    id="batchUrls" 
-                    class="form-input form-textarea" 
-                    rows="6"
-                    placeholder="https://example.com&#10;https://google.com&#10;https://github.com"
-                  ></textarea>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="batchWidth">Width (px)</label>
-                    <input 
-                      type="number" 
-                      id="batchWidth" 
-                      class="form-input" 
-                      value="1200"
-                    >
-                  </div>
-                  <div class="form-group">
-                    <label for="batchHeight">Height (px)</label>
-                    <input 
-                      type="number" 
-                      id="batchHeight" 
-                      class="form-input" 
-                      value="630"
-                    >
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label for="batchWait">Wait Strategy</label>
-                  <select id="batchWait" class="form-input">
-                    <option value="load">load</option>
-                    <option value="domcontentloaded">domcontentloaded</option>
-                    <option value="networkidle0">networkidle0</option>
-                    <option value="networkidle2">networkidle2</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="batchExtraWait">Extra Wait (ms)</label>
-                  <input 
-                    type="number" 
-                    id="batchExtraWait" 
-                    class="form-input" 
-                    value="0"
-                  >
-                </div>
-
-                <div class="form-row">
-                  <div class="form-checkbox">
-                    <input type="checkbox" id="batchFullPage">
-                    <label for="batchFullPage">Full Page</label>
-                  </div>
-                  <div class="form-checkbox">
-                    <input type="checkbox" id="batchLight">
-                    <label for="batchLight">Light Mode</label>
-                  </div>
-                </div>
-
-                <button id="captureBatchBtn" class="btn btn-primary">
-                  <span class="btn-icon">📸</span>
-                  <span id="captureBatchBtnText">Capture All</span>
-                </button>
-              </div>
-
-              <div class="screenshot-preview-column">
-                <div id="batchResults" class="batch-results" style="display: none;">
-                  <h3 id="batchResultsTitle">Results</h3>
-                  <div id="batchResultsGrid" class="batch-results-grid"></div>
-                </div>
-                <div id="batchResultsPlaceholder" class="screenshot-preview-placeholder">
-                  <div class="placeholder-content">
-                    <span class="placeholder-icon">📋</span>
-                    <p>Batch capture results will appear here</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
-
-  <script src="renderer.js"></script>
-  <script src="screenshot.js"></script>
-</body>
+    <script src="renderer.js"></script>
+    <script src="screenshot.js"></script>
+  </body>
 </html>

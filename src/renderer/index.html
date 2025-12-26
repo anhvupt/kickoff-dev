@@ -13,12 +13,24 @@
         <p class="app-subtitle">Image Tools & Screenshot Capture</p>
       </header>
 
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="minimizer">
+      <div class="tabs" role="tablist">
+        <button
+          class="tab-btn active"
+          data-tab="minimizer"
+          role="tab"
+          aria-selected="true"
+          aria-controls="minimizerTab"
+          id="minimizerTabBtn">
           <span class="tab-icon">🖼️</span>
           Image Minimizer
         </button>
-        <button class="tab-btn" data-tab="screenshot">
+        <button
+          class="tab-btn"
+          data-tab="screenshot"
+          role="tab"
+          aria-selected="false"
+          aria-controls="screenshotTab"
+          id="screenshotTabBtn">
           <span class="tab-icon">📸</span>
           Screenshot Capture
         </button>
@@ -26,14 +38,33 @@
 
       <main class="app-main">
         <!-- Image Minimizer Tab -->
-        <div class="tab-content active" id="minimizerTab">
+        <div
+          class="tab-content active"
+          id="minimizerTab"
+          role="tabpanel"
+          aria-labelledby="minimizerTabBtn">
           <div class="feature-section">
-            <button id="selectImagesBtn" class="btn btn-primary">
-              <span class="btn-icon">📁</span>
-              Select Images
-            </button>
+            <div
+              class="drop-zone"
+              id="dropZone"
+              role="button"
+              tabindex="0"
+              aria-label="Drop images here or click to select">
+              <button
+                id="selectImagesBtn"
+                class="btn btn-primary"
+                aria-label="Select images to minimize">
+                <span class="btn-icon" aria-hidden="true">📁</span>
+                Select Images
+              </button>
+              <p class="drop-zone-text">or drag and drop images here</p>
+            </div>
 
-            <div id="selectedImages" class="selected-images"></div>
+            <div
+              id="selectedImages"
+              class="selected-images"
+              role="list"
+              aria-label="Selected images"></div>
           </div>
 
           <div
@@ -42,7 +73,8 @@
             style="display: none">
             <div class="setting-group">
               <label for="ratioSlider"
-                >Size Ratio: <span id="ratioValue">100%</span></label
+                >Size Ratio:
+                <span id="ratioValue" aria-live="polite">100%</span></label
               >
               <input
                 type="range"
@@ -50,12 +82,17 @@
                 min="10"
                 max="100"
                 value="100"
-                class="slider" />
+                class="slider"
+                aria-label="Image size ratio"
+                aria-valuemin="10"
+                aria-valuemax="100"
+                aria-valuenow="100" />
             </div>
 
             <div class="setting-group">
               <label for="qualitySlider"
-                >Quality: <span id="qualityValue">85</span></label
+                >Quality:
+                <span id="qualityValue" aria-live="polite">85</span></label
               >
               <input
                 type="range"
@@ -63,11 +100,18 @@
                 min="50"
                 max="100"
                 value="85"
-                class="slider" />
+                class="slider"
+                aria-label="Image quality"
+                aria-valuemin="50"
+                aria-valuemax="100"
+                aria-valuenow="85" />
             </div>
 
-            <button id="processBtn" class="btn btn-process">
-              <span class="btn-icon">⚡</span>
+            <button
+              id="processBtn"
+              class="btn btn-process"
+              aria-label="Process selected images">
+              <span class="btn-icon" aria-hidden="true">⚡</span>
               Process Images
             </button>
           </div>
@@ -92,12 +136,18 @@
             </div>
 
             <div class="action-buttons">
-              <button id="saveBtn" class="btn btn-success">
-                <span class="btn-icon">💾</span>
+              <button
+                id="saveBtn"
+                class="btn btn-success"
+                aria-label="Save processed images to folder">
+                <span class="btn-icon" aria-hidden="true">💾</span>
                 Save to Folder
               </button>
-              <button id="replaceBtn" class="btn btn-warning">
-                <span class="btn-icon">🔄</span>
+              <button
+                id="replaceBtn"
+                class="btn btn-warning"
+                aria-label="Replace original images with processed versions">
+                <span class="btn-icon" aria-hidden="true">🔄</span>
                 Replace Originals
               </button>
             </div>
@@ -105,7 +155,11 @@
         </div>
 
         <!-- Screenshot Capture Tab -->
-        <div class="tab-content" id="screenshotTab">
+        <div
+          class="tab-content"
+          id="screenshotTab"
+          role="tabpanel"
+          aria-labelledby="screenshotTabBtn">
           <div class="screenshot-container">
             <!-- Single Capture Section -->
             <div class="screenshot-section" id="singleCaptureSection">
@@ -318,6 +372,14 @@
         </div>
       </main>
     </div>
+
+    <!-- Notification Container -->
+    <div
+      id="notificationContainer"
+      class="notification-container"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"></div>
 
     <script src="renderer.js"></script>
     <script src="screenshot.js"></script>

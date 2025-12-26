@@ -1,4 +1,4 @@
-# Kickoff App
+# Kickoff Dev
 
 A clean, cross-platform Electron app with image minimization and screenshot capture features, featuring a beautiful universe-themed UI.
 
@@ -49,6 +49,40 @@ npm start
 npm run watch
 ```
 
+## Building Standalone App (Runs Independently)
+
+To build a standalone app that runs independently (even when you close the editor):
+
+### Quick Build & Run:
+```bash
+./build-and-run.sh
+```
+
+This will:
+1. Build the app
+2. Create a standalone `.app` bundle
+3. Launch it automatically
+4. The app will keep running even if you close the terminal/editor
+
+### Manual Build:
+```bash
+# Build for macOS (creates .app bundle)
+npm run dist:mac
+```
+
+After building, run the app directly:
+```bash
+open dist/mac/Image\ Minimizer.app
+```
+
+Or double-click `dist/mac/Image Minimizer.app` in Finder.
+
+The built app is completely standalone and doesn't require:
+- Node.js to be installed
+- npm/node_modules
+- The editor/terminal to be open
+- The source code
+
 ## Building for Distribution
 
 ### macOS
@@ -56,14 +90,16 @@ npm run watch
 npm run dist:mac
 ```
 
-This will create a `.dmg` file in the `dist` folder.
+This creates:
+- **`.app` bundle** in `dist/mac/` - Run directly or copy to Applications
+- **`.dmg` file** in `dist/` - Installer for distribution
 
 ### Windows
 ```bash
 npm run dist:win
 ```
 
-This will create an installer in the `dist` folder.
+This creates an installer in the `dist` folder.
 
 ## Usage
 
@@ -107,6 +143,7 @@ This will create an installer in the `dist` folder.
 
 - Node.js 18+ 
 - npm or yarn
+- Google Chrome (for screenshot feature in local development)
 
 ## Technologies
 
@@ -127,4 +164,3 @@ For local development, the app requires Google Chrome to be installed:
 You can also set a custom path via the `CHROME_EXECUTABLE_PATH` environment variable.
 
 For serverless environments (Vercel/AWS Lambda), the app automatically uses the bundled Chromium package.
-

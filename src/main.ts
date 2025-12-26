@@ -276,3 +276,24 @@ ipcMain.handle('save-screenshot', async (event, { buffer, filename }) => {
   await fs.writeFile(result.filePath, bufferData);
   return result.filePath;
 });
+
+ipcMain.handle('get-image-preview', async (event, imagePath) => {
+  try {
+    const buffer = await fs.readFile(imagePath);
+    const base64 = buffer.toString('base64');
+    const ext = path.extname(imagePath).toLowerCase().slice(1);
+    const mimeType = {
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      webp: 'image/webp',
+      gif: 'image/gif',
+      bmp: 'image/bmp'
+    }[ext] || 'image/jpeg';
+    
+    return `data:${mimeType};base64,${base64}`;
+  } catch (error) {
+    console.error('Error reading image preview:', error);
+    return null;
+  }
+});

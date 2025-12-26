@@ -1,3 +1,57 @@
+// Notification System (shared with renderer.js)
+function showNotification(title, message, type = 'info', duration = 5000) {
+  const notificationContainer = document.getElementById('notificationContainer');
+  if (!notificationContainer) return;
+  
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.setAttribute('role', 'alert');
+  
+  const icons = {
+    success: '✓',
+    error: '✕',
+    warning: '⚠',
+    info: 'ℹ'
+  };
+  
+  notification.innerHTML = `
+    <span class="notification-icon" aria-hidden="true">${icons[type] || icons.info}</span>
+    <div class="notification-content">
+      <div class="notification-title">${escapeHtml(title)}</div>
+      <div class="notification-message">${escapeHtml(message)}</div>
+    </div>
+    <button class="notification-close" aria-label="Close notification" tabindex="0">×</button>
+  `;
+  
+  const closeBtn = notification.querySelector('.notification-close');
+  const closeNotification = () => {
+    notification.classList.add('fade-out');
+    setTimeout(() => notification.remove(), 300);
+  };
+  
+  closeBtn.addEventListener('click', closeNotification);
+  closeBtn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      closeNotification();
+    }
+  });
+  
+  notificationContainer.appendChild(notification);
+  
+  if (duration > 0) {
+    setTimeout(closeNotification, duration);
+  }
+  
+  return notification;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 // Tab switching
 const tabButtons = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
@@ -7,8 +61,12 @@ tabButtons.forEach((btn) => {
     const targetTab = btn.getAttribute('data-tab');
 
     // Update active tab button
-    tabButtons.forEach((b) => b.classList.remove('active'));
+    tabButtons.forEach((b) => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
     btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
 
     // Update active tab content
     tabContents.forEach((content) => {
@@ -17,6 +75,19 @@ tabButtons.forEach((btn) => {
         content.classList.add('active');
       }
     });
+  });
+  
+  // Keyboard navigation for tabs
+  btn.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const currentIndex = Array.from(tabButtons).indexOf(btn);
+      const nextIndex = e.key === 'ArrowLeft' 
+        ? (currentIndex - 1 + tabButtons.length) % tabButtons.length
+        : (currentIndex + 1) % tabButtons.length;
+      tabButtons[nextIndex].focus();
+      tabButtons[nextIndex].click();
+    }
   });
 });
 
@@ -87,7 +158,10 @@ captureBtn.addEventListener('click', async () => {
 });
 
 copyScreenshotBtn.addEventListener('click', async () => {
-  if (!currentScreenshotBuffer) return;
+  if (!currentScreenshotBuffer) {
+    showNotification('No Screenshot', 'Please capture a screenshot first', 'warning');
+    return;
+  }
 
   try {
     const blob = new Blob([currentScreenshotBuffer], { type: 'image/png' });
@@ -98,17 +172,21 @@ copyScreenshotBtn.addEventListener('click', async () => {
     const originalText = copyScreenshotBtn.innerHTML;
     copyScreenshotBtn.innerHTML = '<span class="btn-icon">✓</span> Copied!';
     copyScreenshotBtn.classList.add('copied-feedback');
+    showNotification('Copied', 'Screenshot copied to clipboard', 'success', 2000);
     setTimeout(() => {
       copyScreenshotBtn.innerHTML = originalText;
       copyScreenshotBtn.classList.remove('copied-feedback');
     }, 2000);
   } catch (error) {
-    alert('Failed to copy to clipboard: ' + error.message);
+    showNotification('Copy Failed', error.message, 'error');
   }
 });
 
 downloadScreenshotBtn.addEventListener('click', async () => {
-  if (!currentScreenshotBuffer) return;
+  if (!currentScreenshotBuffer) {
+    showNotification('No Screenshot', 'Please capture a screenshot first', 'warning');
+    return;
+  }
 
   try {
     const filename = `screenshot-${Date.now()}.png`;
@@ -121,18 +199,20 @@ downloadScreenshotBtn.addEventListener('click', async () => {
       // Show feedback
       const originalText = downloadScreenshotBtn.innerHTML;
       downloadScreenshotBtn.innerHTML = '<span class="btn-icon">✓</span> Saved!';
+      showNotification('Screenshot Saved', `Saved to: ${savedPath}`, 'success', 4000);
       setTimeout(() => {
         downloadScreenshotBtn.innerHTML = originalText;
       }, 2000);
     }
   } catch (error) {
-    alert('Failed to save screenshot: ' + error.message);
+    showNotification('Save Failed', error.message, 'error');
   }
 });
 
 function showError(message) {
   screenshotError.textContent = message;
   screenshotError.style.display = 'block';
+  showNotification('Screenshot Error', message, 'error');
 }
 
 // Batch Capture
@@ -152,7 +232,7 @@ const batchResultsGrid = document.getElementById('batchResultsGrid');
 captureBatchBtn.addEventListener('click', async () => {
   const urlsText = batchUrls.value.trim();
   if (!urlsText) {
-    alert('Please enter at least one URL');
+    showNotification('No URLs', 'Please enter at least one URL', 'warning');
     return;
   }
 
@@ -162,31 +242,46 @@ captureBatchBtn.addEventListener('click', async () => {
     .filter((line) => line.length > 0);
 
   if (urls.length === 0) {
-    alert('Please enter at least one valid URL');
+    showNotification('Invalid URLs', 'Please enter at least one valid URL', 'warning');
     return;
   }
 
   captureBatchBtn.disabled = true;
+  captureBatchBtnText.textContent = 'Capturing...';
   batchResults.style.display = 'block';
   document.getElementById('batchResultsPlaceholder').style.display = 'none';
   batchResultsGrid.innerHTML = '';
   batchResultsTitle.textContent = `Results (0/${urls.length})`;
 
   let doneCount = 0;
+  let successCount = 0;
+  let errorCount = 0;
 
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
 
-    // Create placeholder card
+    // Create placeholder card with progress
     const card = document.createElement('div');
     card.className = 'batch-result-card';
     card.innerHTML = `
       <div class="batch-result-url" title="${url}">${url}</div>
-      <div>Loading...</div>
+      <div class="batch-item-progress">
+        <div class="batch-item-progress-bar">
+          <div class="batch-item-progress-fill" style="width: 0%"></div>
+        </div>
+        <span>Processing...</span>
+      </div>
     `;
     batchResultsGrid.appendChild(card);
+    
+    const progressFill = card.querySelector('.batch-item-progress-fill');
+    const progressText = card.querySelector('.batch-item-progress span');
 
     try {
+      // Update progress
+      progressFill.style.width = '50%';
+      progressText.textContent = 'Capturing...';
+      
       const result = await window.electronAPI.captureScreenshotsBatch({
         urls: [url],
         width: parseInt(batchWidth.value) || 1200,
@@ -199,9 +294,11 @@ captureBatchBtn.addEventListener('click', async () => {
 
       const screenshotResult = result[0];
       doneCount++;
+      progressFill.style.width = '100%';
       batchResultsTitle.textContent = `Results (${doneCount}/${urls.length})`;
 
       if (screenshotResult.success) {
+        successCount++;
         const domain = new URL(url).hostname.replace(/[^a-zA-Z0-9]/g, '_');
         const filename = `screenshot-${domain}-${Date.now()}.png`;
         const bufferArray = screenshotResult.buffer; // Store buffer array
@@ -233,12 +330,13 @@ captureBatchBtn.addEventListener('click', async () => {
             const originalText = copyBtn.innerHTML;
             copyBtn.innerHTML = '<span class="btn-icon">✓</span> Copied!';
             copyBtn.classList.add('copied-feedback');
+            showNotification('Copied', 'Screenshot copied to clipboard', 'success', 2000);
             setTimeout(() => {
               copyBtn.innerHTML = originalText;
               copyBtn.classList.remove('copied-feedback');
             }, 2000);
           } catch (error) {
-            alert('Failed to copy: ' + error.message);
+            showNotification('Copy Failed', error.message, 'error');
           }
         });
 
@@ -252,28 +350,44 @@ captureBatchBtn.addEventListener('click', async () => {
             if (savedPath) {
               const originalText = downloadBtn.innerHTML;
               downloadBtn.innerHTML = '<span class="btn-icon">✓</span> Saved!';
+              showNotification('Saved', `Screenshot saved to: ${savedPath}`, 'success', 3000);
               setTimeout(() => {
                 downloadBtn.innerHTML = originalText;
               }, 2000);
             }
           } catch (error) {
-            alert('Failed to save: ' + error.message);
+            showNotification('Save Failed', error.message, 'error');
           }
         });
       } else {
+        errorCount++;
         card.innerHTML = `
           <div class="batch-result-url" title="${url}">${url}</div>
           <div class="batch-result-error">Error: ${screenshotResult.error || 'Unknown error'}</div>
         `;
       }
     } catch (error) {
+      errorCount++;
       doneCount++;
+      progressFill.style.width = '100%';
       batchResultsTitle.textContent = `Results (${doneCount}/${urls.length})`;
       card.innerHTML = `
         <div class="batch-result-url" title="${url}">${url}</div>
         <div class="batch-result-error">Error: ${error.message || 'Unknown error'}</div>
       `;
     }
+  }
+
+  // Show completion notification
+  if (successCount > 0) {
+    showNotification(
+      'Batch Capture Complete',
+      `Successfully captured ${successCount} of ${urls.length} screenshot(s)${errorCount > 0 ? ` (${errorCount} failed)` : ''}`,
+      successCount === urls.length ? 'success' : 'warning',
+      5000
+    );
+  } else {
+    showNotification('Batch Capture Failed', 'All screenshots failed to capture', 'error', 5000);
   }
 
   captureBatchBtn.disabled = false;

@@ -29,5 +29,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   }) => ipcRenderer.invoke('capture-screenshots-batch', data),
   saveScreenshot: (data: { buffer: ArrayBuffer; filename?: string }) =>
     ipcRenderer.invoke('save-screenshot', data),
+  getImagePreview: (imagePath: string) =>
+    ipcRenderer.invoke('get-image-preview', imagePath),
 });
 

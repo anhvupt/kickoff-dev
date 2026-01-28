@@ -259,91 +259,9 @@
               </div>
             </div>
 
-            <!-- Single Capture Section -->
-            <div class="collapsible-section" id="singleCaptureSection">
-              <div class="section-header" id="singleCaptureHeader">
-                <h2 class="section-title">Single Capture</h2>
-                <span class="section-chevron">▼</span>
-              </div>
-              <div class="section-content">
-
-              <div class="screenshot-layout">
-                <div class="screenshot-form-column">
-                  <div class="form-group">
-                    <label for="screenshotUrl">URL</label>
-                    <input
-                      type="url"
-                      id="screenshotUrl"
-                      class="form-input"
-                      placeholder="https://example.com"
-                      required />
-                  </div>
-
-                  <button id="captureBtn" class="btn btn-primary">
-                    <span class="btn-icon">📸</span>
-                    <span id="captureBtnText">Capture</span>
-                  </button>
-
-                  <div
-                    id="screenshotError"
-                    class="error-alert"
-                    style="display: none"></div>
-                </div>
-
-                <div class="screenshot-preview-column">
-                  <div
-                    id="screenshotPreview"
-                    class="screenshot-preview"
-                    style="display: none">
-                    <h3>Preview</h3>
-                    <div class="preview-image-container">
-                      <img id="screenshotImage" alt="Screenshot preview" />
-                    </div>
-                    <div class="preview-actions">
-                      <button id="copyScreenshotBtn" class="btn btn-success">
-                        <span class="btn-icon">📋</span>
-                        Copy to Clipboard
-                      </button>
-                      <button
-                        id="downloadScreenshotBtn"
-                        class="btn btn-success">
-                        <span class="btn-icon">💾</span>
-                        Download PNG
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    id="presetResults"
-                    class="batch-results"
-                    style="display: none">
-                    <div class="batch-results-header">
-                      <h3 id="presetResultsTitle">Results</h3>
-                      <button type="button" id="presetDownloadZipBtn" class="btn btn-success batch-download-zip-btn" style="display: none;">
-                        <span class="btn-icon">📦</span> Download all as ZIP
-                      </button>
-                    </div>
-                    <div id="presetResultsGrid" class="batch-results-grid"></div>
-                  </div>
-                  <div
-                    id="screenshotPreviewPlaceholder"
-                    class="screenshot-preview-placeholder">
-                    <div class="placeholder-content">
-                      <span class="placeholder-icon">📸</span>
-                      <p>Captured screenshot will appear here</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              </div>
-            </div>
-
-            <!-- Batch Capture Section -->
-            <div class="collapsible-section collapsed" id="batchCaptureSection">
-              <div class="section-header" id="batchCaptureHeader">
-                <h2 class="section-title">Batch Capture</h2>
-                <span class="section-chevron">▶</span>
-              </div>
-              <div class="section-content">
+            <!-- Capture Section -->
+            <div class="screenshot-section" id="batchCaptureSection">
+              <h2 class="section-title">Capture</h2>
 
               <div class="screenshot-layout">
                 <div class="screenshot-form-column">
@@ -397,7 +315,6 @@
                     </div>
                   </div>
                 </div>
-              </div>
               </div>
             </div>
           </div>

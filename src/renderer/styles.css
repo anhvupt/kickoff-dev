@@ -448,57 +448,6 @@ body {
   border: 1px solid var(--border-color);
 }
 
-.collapsible-section {
-  background: var(--bg-secondary);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  margin-bottom: 1rem;
-  overflow: hidden;
-}
-
-.section-header {
-  padding: 1.5rem 2rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  user-select: none;
-  transition: background-color 0.2s ease;
-}
-
-.section-header:hover {
-  background: var(--bg-tertiary);
-}
-
-.section-header .section-title {
-  margin: 0;
-  font-size: 1.5rem;
-  color: var(--text-primary);
-}
-
-.section-chevron {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  transition: transform 0.3s ease;
-}
-
-.collapsible-section.collapsed .section-chevron {
-  transform: rotate(-90deg);
-}
-
-.section-content {
-  padding: 0 2rem 2rem;
-  max-height: none;
-  overflow: visible;
-  transition: max-height 0.3s ease, padding 0.3s ease;
-}
-
-.collapsible-section.collapsed .section-content {
-  max-height: 0;
-  padding: 0 2rem;
-  overflow: hidden;
-}
-
 .screenshot-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;

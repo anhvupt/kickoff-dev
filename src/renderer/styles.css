@@ -552,6 +552,27 @@ body {
   gap: 1rem;
 }
 
+.saved-url-sets-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.saved-url-set-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.saved-url-set-item .btn {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.85rem;
+}
+
 .form-checkbox {
   display: flex;
   align-items: center;
@@ -619,6 +640,19 @@ body {
   padding: 1.5rem;
   border-radius: 12px;
   border: 1px solid var(--border-color);
+}
+
+.batch-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.batch-results-header h3 {
+  margin: 0;
 }
 
 .batch-results h3 {

@@ -34,16 +34,6 @@
           <span class="tab-icon">📸</span>
           Screenshot Capture
         </button>
-        <button
-          class="tab-btn"
-          data-tab="screenSelection"
-          role="tab"
-          aria-selected="false"
-          aria-controls="screenSelectionTab"
-          id="screenSelectionTabBtn">
-          <span class="tab-icon">🖥️</span>
-          Screen Selection
-        </button>
       </div>
 
       <main class="app-main">
@@ -319,7 +309,12 @@
                     id="presetResults"
                     class="batch-results"
                     style="display: none">
-                    <h3 id="presetResultsTitle">Results</h3>
+                    <div class="batch-results-header">
+                      <h3 id="presetResultsTitle">Results</h3>
+                      <button type="button" id="presetDownloadZipBtn" class="btn btn-success batch-download-zip-btn" style="display: none;">
+                        <span class="btn-icon">📦</span> Download all as ZIP
+                      </button>
+                    </div>
                     <div id="presetResultsGrid" class="batch-results-grid"></div>
                   </div>
                   <div
@@ -347,6 +342,19 @@
                       class="form-input form-textarea"
                       rows="6"
                       placeholder="https://example.com&#10;https://google.com&#10;https://github.com"></textarea>
+                  </div>
+
+                  <div class="form-group url-sets-group">
+                    <label>Saved URL sets</label>
+                    <div class="form-row" style="gap: 0.5rem; align-items: center;">
+                      <button type="button" id="saveUrlSetBtn" class="btn btn-success" disabled title="Save current URLs as a named set">
+                        <span class="btn-icon">💾</span> Save as set
+                      </button>
+                      <select id="loadUrlSetSelect" class="form-input" style="flex: 1; min-width: 0;" title="Load a saved URL set">
+                        <option value="">— Load a set —</option>
+                      </select>
+                    </div>
+                    <ul id="savedUrlSetsList" class="saved-url-sets-list" aria-label="Saved URL sets"></ul>
                   </div>
 
                   <div class="form-row">
@@ -409,7 +417,12 @@
                     id="batchResults"
                     class="batch-results"
                     style="display: none">
-                    <h3 id="batchResultsTitle">Results</h3>
+                    <div class="batch-results-header">
+                      <h3 id="batchResultsTitle">Results</h3>
+                      <button type="button" id="batchDownloadZipBtn" class="btn btn-success batch-download-zip-btn" style="display: none;">
+                        <span class="btn-icon">📦</span> Download all as ZIP
+                      </button>
+                    </div>
                     <div id="batchResultsGrid" class="batch-results-grid"></div>
                   </div>
                   <div
@@ -426,82 +439,6 @@
           </div>
         </div>
 
-        <!-- Screen Selection Tab -->
-        <div
-          class="tab-content"
-          id="screenSelectionTab"
-          role="tabpanel"
-          aria-labelledby="screenSelectionTabBtn">
-          <div class="screenshot-container">
-            <div class="screenshot-section">
-              <h2 class="section-title">Screen Capture</h2>
-
-              <div class="screenshot-layout">
-                <div class="screenshot-form-column">
-                  <button id="startScreenSelectionBtn" class="btn btn-primary">
-                    <span class="btn-icon">🖥️</span>
-                    <span id="startSelectionBtnText">Start Selection</span>
-                  </button>
-
-                  <div
-                    id="screenSelectionError"
-                    class="error-alert"
-                    style="display: none"></div>
-                </div>
-
-                <div class="screenshot-preview-column">
-                  <div
-                    id="screenSelectionPreview"
-                    class="screenshot-preview"
-                    style="display: none">
-                    <h3>Preview</h3>
-                    <div
-                      class="preview-image-container"
-                      id="screenSelectionPreviewContainer">
-                      <img
-                        id="screenSelectionImage"
-                        alt="Screen selection preview" />
-                      <canvas id="screenSelectionBlurCanvas"></canvas>
-                    </div>
-                    <div class="preview-actions">
-                      <button
-                        id="copyScreenSelectionBtn"
-                        class="btn btn-success">
-                        <span class="btn-icon">📋</span>
-                        Copy to Clipboard
-                      </button>
-                      <button
-                        id="downloadScreenSelectionBtn"
-                        class="btn btn-success">
-                        <span class="btn-icon">💾</span>
-                        Download PNG
-                      </button>
-                      <button id="enableScreenBlurBtn" class="btn btn-primary">
-                        <span class="btn-icon">🔒</span>
-                        <span id="screenBlurBtnText">Select Area to Blur</span>
-                      </button>
-                      <button
-                        id="clearScreenBlurBtn"
-                        class="btn btn-warning"
-                        style="display: none">
-                        <span class="btn-icon">🗑️</span>
-                        Clear Blur
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    id="screenSelectionPreviewPlaceholder"
-                    class="screenshot-preview-placeholder">
-                    <div class="placeholder-content">
-                      <span class="placeholder-icon">🖥️</span>
-                      <p>Captured screen selection will appear here</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
 
@@ -515,6 +452,5 @@
 
     <script src="renderer.js"></script>
     <script src="screenshot.js"></script>
-    <script src="screen-selection.js"></script>
   </body>
 </html>

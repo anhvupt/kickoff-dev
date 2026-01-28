@@ -2,23 +2,27 @@ import {
   app,
   BrowserWindow,
   ipcMain,
-  dialog,
-  screen,
-  desktopCapturer
+  dialog
 } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import { createWriteStream } from 'fs';
+import archiver from 'archiver';
+import Store from 'electron-store';
 import sharp from 'sharp';
 import { captureScreenshot, closeBrowser } from './screenshot-service';
-import {
-  captureScreenArea,
-  getDisplayForPoint,
-  checkScreenRecordingPermission
-} from './screen-capture-service';
+
+const store = new Store<{
+  urlCapture?: {
+    defaultSizeMode?: 'custom' | 'presets';
+    defaultPresets?: string[];
+    defaultWidth?: number;
+    defaultHeight?: number;
+    savedUrlSets?: { id: string; name: string; urls: string[]; createdAt?: number }[];
+  };
+}>();
 
 let mainWindow: BrowserWindow | null = null;
-let captureBarWindow: BrowserWindow | null = null;
-let overlayWindow: BrowserWindow | null = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -363,6 +367,82 @@ ipcMain.handle('save-screenshot', async (event, { buffer, filename }) => {
   return result.filePath;
 });
 
+// URL capture settings (electron-store)
+ipcMain.handle('get-url-capture-settings', async () => {
+  const urlCapture = store.get('urlCapture', {});
+  return {
+    defaultSizeMode: urlCapture.defaultSizeMode ?? 'custom',
+    defaultPresets: urlCapture.defaultPresets ?? [],
+    defaultWidth: urlCapture.defaultWidth ?? 1200,
+    defaultHeight: urlCapture.defaultHeight ?? 630,
+    savedUrlSets: urlCapture.savedUrlSets ?? []
+  };
+});
+
+ipcMain.handle('set-url-capture-settings', async (event, settings) => {
+  const current = store.get('urlCapture', {});
+  if (settings.defaultSizeMode !== undefined) current.defaultSizeMode = settings.defaultSizeMode;
+  if (settings.defaultPresets !== undefined) current.defaultPresets = settings.defaultPresets;
+  if (settings.defaultWidth !== undefined) current.defaultWidth = settings.defaultWidth;
+  if (settings.defaultHeight !== undefined) current.defaultHeight = settings.defaultHeight;
+  store.set('urlCapture', current);
+  return store.get('urlCapture');
+});
+
+// Saved URL sets
+ipcMain.handle('get-saved-url-sets', async () => {
+  const urlCapture = store.get('urlCapture', {});
+  return urlCapture.savedUrlSets ?? [];
+});
+
+ipcMain.handle('save-url-set', async (event, { name, urls }: { name: string; urls: string[] }) => {
+  const urlCapture = store.get('urlCapture', {});
+  const sets = urlCapture.savedUrlSets ?? [];
+  const id = Date.now().toString();
+  sets.push({ id, name, urls, createdAt: Date.now() });
+  store.set('urlCapture', { ...urlCapture, savedUrlSets: sets });
+  return sets;
+});
+
+ipcMain.handle('delete-url-set', async (event, id: string) => {
+  const urlCapture = store.get('urlCapture', {});
+  const sets = (urlCapture.savedUrlSets ?? []).filter((s) => s.id !== id);
+  store.set('urlCapture', { ...urlCapture, savedUrlSets: sets });
+  return sets;
+});
+
+ipcMain.handle(
+  'save-screenshots-zip',
+  async (
+    event,
+    { entries }: { entries: { filename: string; buffer: number[] }[] }
+  ) => {
+    if (!mainWindow || !entries?.length) {
+      return { success: false, error: 'No images to save' };
+    }
+    const result = await dialog.showSaveDialog(mainWindow, {
+      defaultPath: 'screenshots.zip',
+      filters: [{ name: 'ZIP Archives', extensions: ['zip'] }]
+    });
+    if (result.canceled || !result.filePath) {
+      return { success: true, canceled: true };
+    }
+    return new Promise<{ success: boolean; path?: string; error?: string }>(
+      (resolve) => {
+        const out = createWriteStream(result.filePath!);
+        const archive = archiver('zip', { zlib: { level: 9 } });
+        out.on('close', () => resolve({ success: true, path: result.filePath! }));
+        archive.on('error', (err: Error) => resolve({ success: false, error: err.message }));
+        archive.pipe(out);
+        for (const e of entries) {
+          archive.append(Buffer.from(e.buffer), { name: e.filename });
+        }
+        archive.finalize();
+      }
+    );
+  }
+);
+
 ipcMain.handle('get-image-preview', async (event, imagePath) => {
   try {
     const buffer = await fs.readFile(imagePath);
@@ -385,223 +465,3 @@ ipcMain.handle('get-image-preview', async (event, imagePath) => {
   }
 });
 
-// Screen Selection IPC Handlers
-ipcMain.handle('start-screen-selection', async () => {
-  try {
-    if (!mainWindow) {
-      return { success: false, error: 'Main window not available' };
-    }
-
-    // Check macOS Screen Recording permission
-    if (process.platform === 'darwin') {
-      const hasPermission = await checkScreenRecordingPermission();
-      if (!hasPermission) {
-        return {
-          success: false,
-          error: 'SCREEN_RECORDING_PERMISSION_REQUIRED',
-          message:
-            'Screen Recording permission is required. Please enable it in System Preferences > Security & Privacy > Privacy > Screen Recording, then restart the app.'
-        };
-      }
-    }
-
-    // Hide main window
-    mainWindow.hide();
-
-    // Get primary display for positioning
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const displays = screen.getAllDisplays();
-
-    // Calculate bounds covering all displays
-    let minX = Infinity,
-      minY = Infinity,
-      maxX = -Infinity,
-      maxY = -Infinity;
-    displays.forEach((display) => {
-      minX = Math.min(minX, display.bounds.x);
-      minY = Math.min(minY, display.bounds.y);
-      maxX = Math.max(maxX, display.bounds.x + display.bounds.width);
-      maxY = Math.max(maxY, display.bounds.y + display.bounds.height);
-    });
-
-    const overlayWidth = maxX - minX;
-    const overlayHeight = maxY - minY;
-
-    // Create capture bar window
-    captureBarWindow = new BrowserWindow({
-      width: 300,
-      height: 80,
-      frame: false,
-      transparent: true,
-      alwaysOnTop: true,
-      skipTaskbar: true,
-      resizable: false,
-      movable: true,
-      webPreferences: {
-        preload: path.join(__dirname, 'capture-bar-preload.js'),
-        nodeIntegration: false,
-        contextIsolation: true
-      },
-      x:
-        primaryDisplay.bounds.x +
-        Math.floor((primaryDisplay.bounds.width - 300) / 2),
-      y: primaryDisplay.bounds.y + 50
-    });
-
-    // macOS specific: visible on all workspaces
-    if (process.platform === 'darwin') {
-      captureBarWindow.setVisibleOnAllWorkspaces(true, {
-        visibleOnFullScreen: true
-      });
-    }
-
-    captureBarWindow.loadFile(
-      path.join(__dirname, '../src/renderer/capture-bar.html')
-    );
-    captureBarWindow.setIgnoreMouseEvents(false);
-
-    // Create overlay window covering all displays
-    overlayWindow = new BrowserWindow({
-      width: overlayWidth,
-      height: overlayHeight,
-      x: minX,
-      y: minY,
-      frame: false,
-      transparent: true,
-      alwaysOnTop: true,
-      skipTaskbar: true,
-      resizable: false,
-      movable: false,
-      webPreferences: {
-        preload: path.join(__dirname, 'overlay-preload.js'),
-        nodeIntegration: false,
-        contextIsolation: true
-      }
-    });
-
-    // macOS specific: visible on all workspaces
-    if (process.platform === 'darwin') {
-      overlayWindow.setVisibleOnAllWorkspaces(true, {
-        visibleOnFullScreen: true
-      });
-    }
-
-    overlayWindow.loadFile(
-      path.join(__dirname, '../src/renderer/overlay.html')
-    );
-    overlayWindow.setIgnoreMouseEvents(false);
-    overlayWindow.setFullScreenable(false);
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error starting screen selection:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    };
-  }
-});
-
-ipcMain.handle('get-overlay-position', async () => {
-  if (!overlayWindow) {
-    return { x: 0, y: 0 };
-  }
-  const bounds = overlayWindow.getBounds();
-  return { x: bounds.x, y: bounds.y };
-});
-
-ipcMain.handle(
-  'capture-screen-area',
-  async (event, { x, y, width, height }) => {
-    try {
-      // Check permission again before capture
-      if (process.platform === 'darwin') {
-        const hasPermission = await checkScreenRecordingPermission();
-        if (!hasPermission) {
-          return {
-            success: false,
-            error: 'SCREEN_RECORDING_PERMISSION_REQUIRED',
-            message:
-              'Screen Recording permission is required. Please enable it in System Preferences > Security & Privacy > Privacy > Screen Recording, then restart the app.'
-          };
-        }
-      }
-
-      // Use the getUserMedia-based captureScreenArea function
-      const buffer = await captureScreenArea(x, y, width, height);
-      const base64 = buffer.toString('base64');
-      const bufferArray = Array.from(buffer);
-
-      return {
-        success: true,
-        buffer: bufferArray,
-        dataUrl: `data:image/png;base64,${base64}`
-      };
-    } catch (error) {
-      console.error('Error capturing screen area:', error);
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-
-      // Check if it's a permission error
-      if (
-        errorMessage.includes('permission') ||
-        errorMessage.includes('Permission')
-      ) {
-        return {
-          success: false,
-          error: 'SCREEN_RECORDING_PERMISSION_REQUIRED',
-          message:
-            'Screen Recording permission is required. Please enable it in System Preferences > Security & Privacy > Privacy > Screen Recording, then restart the app.'
-        };
-      }
-
-      return {
-        success: false,
-        error: errorMessage
-      };
-    }
-  }
-);
-
-ipcMain.handle('finish-screen-selection', async (event, result) => {
-  // Cleanup windows
-  if (captureBarWindow) {
-    captureBarWindow.close();
-    captureBarWindow = null;
-  }
-  if (overlayWindow) {
-    overlayWindow.close();
-    overlayWindow = null;
-  }
-
-  // Show main window and send result
-  if (mainWindow) {
-    mainWindow.show();
-    mainWindow.webContents.send('screen-selection-result', result);
-  }
-
-  return { success: true };
-});
-
-ipcMain.handle('cancel-screen-selection', async () => {
-  // Cleanup windows
-  if (captureBarWindow) {
-    captureBarWindow.close();
-    captureBarWindow = null;
-  }
-  if (overlayWindow) {
-    overlayWindow.close();
-    overlayWindow = null;
-  }
-
-  // Show main window and send cancellation
-  if (mainWindow) {
-    mainWindow.show();
-    mainWindow.webContents.send('screen-selection-result', {
-      success: false,
-      error: 'cancelled'
-    });
-  }
-
-  return { success: true };
-});

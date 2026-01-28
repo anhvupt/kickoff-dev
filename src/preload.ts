@@ -39,9 +39,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('save-screenshot', data),
   getImagePreview: (imagePath: string) =>
     ipcRenderer.invoke('get-image-preview', imagePath),
-  startScreenSelection: () => ipcRenderer.invoke('start-screen-selection'),
-  onScreenSelectionResult: (callback: (result: any) => void) => {
-    ipcRenderer.on('screen-selection-result', (_event, result) => callback(result));
-  },
+  getUrlCaptureSettings: () => ipcRenderer.invoke('get-url-capture-settings'),
+  setUrlCaptureSettings: (settings: {
+    defaultSizeMode?: 'custom' | 'presets';
+    defaultPresets?: string[];
+    defaultWidth?: number;
+    defaultHeight?: number;
+  }) => ipcRenderer.invoke('set-url-capture-settings', settings),
+  getSavedUrlSets: () => ipcRenderer.invoke('get-saved-url-sets'),
+  saveUrlSet: (data: { name: string; urls: string[] }) =>
+    ipcRenderer.invoke('save-url-set', data),
+  deleteUrlSet: (id: string) => ipcRenderer.invoke('delete-url-set', id),
+  saveScreenshotsZip: (data: {
+    entries: { filename: string; buffer: number[] }[];
+  }) => ipcRenderer.invoke('save-screenshots-zip', data),
 });
 

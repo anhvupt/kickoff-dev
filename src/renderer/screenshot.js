@@ -127,10 +127,12 @@ const presetDesktop = document.getElementById('presetDesktop');
 const presetResults = document.getElementById('presetResults');
 const presetResultsTitle = document.getElementById('presetResultsTitle');
 const presetResultsGrid = document.getElementById('presetResultsGrid');
+const presetDownloadZipBtn = document.getElementById('presetDownloadZipBtn');
 const screenshotPreviewPlaceholder = document.getElementById('screenshotPreviewPlaceholder');
 
 let currentScreenshotBuffer = null;
 let presetScreenshotBuffers = {}; // Store buffers for preset screenshots
+let batchCaptureResults = []; // { url, buffer }[] for "Download all as ZIP"
 
 // Handle capture mode toggle
 captureModeCustom.addEventListener('change', () => {
@@ -189,6 +191,7 @@ captureBtn.addEventListener('click', async () => {
     presetResultsGrid.innerHTML = '';
     presetResultsTitle.textContent = `Results (0/${selectedPresets.length})`;
     presetScreenshotBuffers = {};
+    if (presetDownloadZipBtn) presetDownloadZipBtn.style.display = 'none';
 
     let doneCount = 0;
     let successCount = 0;
@@ -314,6 +317,8 @@ captureBtn.addEventListener('click', async () => {
       }
     }
 
+    if (presetDownloadZipBtn) presetDownloadZipBtn.style.display = successCount > 0 ? 'inline-flex' : 'none';
+
     // Show completion notification
     if (successCount > 0) {
       showNotification(
@@ -427,6 +432,112 @@ function showError(message) {
 // Batch Capture
 const batchUrls = document.getElementById('batchUrls');
 const batchWidth = document.getElementById('batchWidth');
+const saveUrlSetBtn = document.getElementById('saveUrlSetBtn');
+const loadUrlSetSelect = document.getElementById('loadUrlSetSelect');
+const savedUrlSetsList = document.getElementById('savedUrlSetsList');
+
+let savedUrlSetsCache = [];
+
+function getBatchUrlsAsArray() {
+  return batchUrls.value
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
+
+function hasValidBatchUrls() {
+  const urls = getBatchUrlsAsArray();
+  if (urls.length === 0) return false;
+  try {
+    urls.forEach((u) => new URL(u));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function setSaveUrlSetButtonState() {
+  if (saveUrlSetBtn) saveUrlSetBtn.disabled = !hasValidBatchUrls();
+}
+
+async function refreshSavedUrlSets() {
+  if (!window.electronAPI?.getSavedUrlSets) return;
+  try {
+    const sets = await window.electronAPI.getSavedUrlSets();
+    savedUrlSetsCache = sets;
+    if (loadUrlSetSelect) {
+      const selected = loadUrlSetSelect.value;
+      loadUrlSetSelect.innerHTML = '<option value="">— Load a set —</option>';
+      sets.forEach((s) => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        loadUrlSetSelect.appendChild(opt);
+      });
+      if (selected && sets.some((s) => s.id === selected)) loadUrlSetSelect.value = selected;
+    }
+    if (savedUrlSetsList) {
+      savedUrlSetsList.innerHTML = '';
+      sets.forEach((s) => {
+        const li = document.createElement('li');
+        li.className = 'saved-url-set-item';
+        const loadBtn = document.createElement('button');
+        loadBtn.type = 'button';
+        loadBtn.className = 'btn btn-success';
+        loadBtn.textContent = 'Load';
+        loadBtn.addEventListener('click', () => {
+          batchUrls.value = (s.urls || []).join('\n');
+          if (loadUrlSetSelect) loadUrlSetSelect.value = s.id;
+        });
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'btn btn-warning';
+        delBtn.textContent = 'Delete';
+        delBtn.addEventListener('click', async () => {
+          if (!window.electronAPI?.deleteUrlSet) return;
+          await window.electronAPI.deleteUrlSet(s.id);
+          refreshSavedUrlSets();
+        });
+        li.appendChild(document.createTextNode(s.name + ' '));
+        li.appendChild(loadBtn);
+        li.appendChild(delBtn);
+        savedUrlSetsList.appendChild(li);
+      });
+    }
+  } catch (_) {}
+}
+
+if (saveUrlSetBtn) {
+  saveUrlSetBtn.addEventListener('click', async () => {
+    const urls = getBatchUrlsAsArray().filter((u) => {
+      try {
+        new URL(u);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    if (urls.length === 0) {
+      showNotification('No valid URLs', 'Enter at least one valid URL to save', 'warning');
+      return;
+    }
+    const name = window.prompt('Name for this URL set', 'My URL set');
+    if (name == null || name.trim() === '') return;
+    if (!window.electronAPI?.saveUrlSet) return;
+    await window.electronAPI.saveUrlSet({ name: name.trim(), urls });
+    showNotification('URL set saved', `"${name.trim}" saved with ${urls.length} URL(s)`, 'success');
+    refreshSavedUrlSets();
+  });
+}
+if (loadUrlSetSelect) {
+  loadUrlSetSelect.addEventListener('change', () => {
+    const id = loadUrlSetSelect.value;
+    const set = savedUrlSetsCache.find((s) => s.id === id);
+    if (set && set.urls) batchUrls.value = set.urls.join('\n');
+  });
+}
+if (batchUrls) batchUrls.addEventListener('input', setSaveUrlSetButtonState);
+
 const batchHeight = document.getElementById('batchHeight');
 const batchWait = document.getElementById('batchWait');
 const batchExtraWait = document.getElementById('batchExtraWait');
@@ -437,6 +548,7 @@ const captureBatchBtnText = document.getElementById('captureBatchBtnText');
 const batchResults = document.getElementById('batchResults');
 const batchResultsTitle = document.getElementById('batchResultsTitle');
 const batchResultsGrid = document.getElementById('batchResultsGrid');
+const batchDownloadZipBtn = document.getElementById('batchDownloadZipBtn');
 
 captureBatchBtn.addEventListener('click', async () => {
   const urlsText = batchUrls.value.trim();
@@ -461,6 +573,8 @@ captureBatchBtn.addEventListener('click', async () => {
   document.getElementById('batchResultsPlaceholder').style.display = 'none';
   batchResultsGrid.innerHTML = '';
   batchResultsTitle.textContent = `Results (0/${urls.length})`;
+  batchCaptureResults = [];
+  if (batchDownloadZipBtn) batchDownloadZipBtn.style.display = 'none';
 
   let doneCount = 0;
   let successCount = 0;
@@ -509,8 +623,9 @@ captureBatchBtn.addEventListener('click', async () => {
       if (screenshotResult.success) {
         successCount++;
         const domain = new URL(url).hostname.replace(/[^a-zA-Z0-9]/g, '_');
-        const filename = `screenshot-${domain}-${Date.now()}.png`;
+        const filename = `screenshot-${domain}-${i}.png`;
         const bufferArray = screenshotResult.buffer; // Store buffer array
+        batchCaptureResults.push({ url, buffer: bufferArray, filename });
 
         card.innerHTML = `
           <div class="batch-result-url" title="${url}">${url}</div>
@@ -587,6 +702,8 @@ captureBatchBtn.addEventListener('click', async () => {
     }
   }
 
+  if (batchDownloadZipBtn) batchDownloadZipBtn.style.display = successCount > 0 ? 'inline-flex' : 'none';
+
   // Show completion notification
   if (successCount > 0) {
     showNotification(
@@ -602,4 +719,108 @@ captureBatchBtn.addEventListener('click', async () => {
   captureBatchBtn.disabled = false;
   captureBatchBtnText.textContent = 'Capture All';
 });
+
+if (batchDownloadZipBtn) {
+  batchDownloadZipBtn.addEventListener('click', async () => {
+    if (!batchCaptureResults.length || !window.electronAPI?.saveScreenshotsZip) return;
+    const entries = batchCaptureResults.map((r) => ({
+      filename: r.filename || `screenshot-${String(r.url).replace(/[^a-zA-Z0-9.]/g, '_')}.png`,
+      buffer: r.buffer
+    }));
+    const result = await window.electronAPI.saveScreenshotsZip({ entries });
+    if (result.canceled) return;
+    if (result.success && result.path) {
+      showNotification('ZIP saved', `Saved to ${result.path}`, 'success', 4000);
+    } else if (!result.success && result.error) {
+      showNotification('ZIP failed', result.error, 'error');
+    }
+  });
+}
+
+if (presetDownloadZipBtn) {
+  presetDownloadZipBtn.addEventListener('click', async () => {
+    const keys = Object.keys(presetScreenshotBuffers || {});
+    if (!keys.length || !window.electronAPI?.saveScreenshotsZip) return;
+    let host = 'page';
+    try {
+      host = new URL(screenshotUrl.value).hostname.replace(/[^a-zA-Z0-9]/g, '_');
+    } catch (_) {}
+    const entries = keys.map((presetKey) => ({
+      filename: `screenshot-${presetKey}-${host}.png`,
+      buffer: presetScreenshotBuffers[presetKey]
+    }));
+    const result = await window.electronAPI.saveScreenshotsZip({ entries });
+    if (result.canceled) return;
+    if (result.success && result.path) {
+      showNotification('ZIP saved', `Saved to ${result.path}`, 'success', 4000);
+    } else if (!result.success && result.error) {
+      showNotification('ZIP failed', result.error, 'error');
+    }
+  });
+}
+
+// URL capture settings: load defaults and debounced save
+function debounce(fn, ms) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), ms);
+  };
+}
+
+async function loadUrlCaptureSettings() {
+  if (!window.electronAPI?.getUrlCaptureSettings) return;
+  try {
+    const s = await window.electronAPI.getUrlCaptureSettings();
+    if (s.defaultSizeMode === 'presets') {
+      captureModePresets.checked = true;
+      captureModeCustom.checked = false;
+      customSizeGroup.style.display = 'none';
+      presetSizeGroup.style.display = 'block';
+    } else {
+      captureModeCustom.checked = true;
+      captureModePresets.checked = false;
+      customSizeGroup.style.display = 'block';
+      presetSizeGroup.style.display = 'none';
+    }
+    presetMobile.checked = (s.defaultPresets || []).includes('mobile');
+    presetTablet.checked = (s.defaultPresets || []).includes('tablet');
+    presetLaptop.checked = (s.defaultPresets || []).includes('laptop');
+    presetDesktop.checked = (s.defaultPresets || []).includes('desktop');
+    const w = s.defaultWidth ?? 1200;
+    const h = s.defaultHeight ?? 630;
+    screenshotWidth.value = String(w);
+    screenshotHeight.value = String(h);
+    batchWidth.value = String(w);
+    batchHeight.value = String(h);
+  } catch (_) {}
+}
+
+function persistUrlCaptureSettings() {
+  if (!window.electronAPI?.setUrlCaptureSettings) return;
+  const defaultPresets = [];
+  if (presetMobile.checked) defaultPresets.push('mobile');
+  if (presetTablet.checked) defaultPresets.push('tablet');
+  if (presetLaptop.checked) defaultPresets.push('laptop');
+  if (presetDesktop.checked) defaultPresets.push('desktop');
+  window.electronAPI.setUrlCaptureSettings({
+    defaultSizeMode: captureModePresets.checked ? 'presets' : 'custom',
+    defaultPresets,
+    defaultWidth: parseInt(screenshotWidth.value, 10) || 1200,
+    defaultHeight: parseInt(screenshotHeight.value, 10) || 630
+  });
+}
+
+const debouncedPersist = debounce(persistUrlCaptureSettings, 500);
+
+[captureModeCustom, captureModePresets, presetMobile, presetTablet, presetLaptop, presetDesktop].forEach((el) => {
+  if (el) el.addEventListener('change', debouncedPersist);
+});
+[screenshotWidth, screenshotHeight, batchWidth, batchHeight].forEach((el) => {
+  if (el) el.addEventListener('input', debouncedPersist);
+});
+
+loadUrlCaptureSettings();
+refreshSavedUrlSets();
+setSaveUrlSetButtonState();
 

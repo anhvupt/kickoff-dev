@@ -396,12 +396,25 @@ ipcMain.handle('get-saved-url-sets', async () => {
 });
 
 ipcMain.handle('save-url-set', async (event, { name, urls }: { name: string; urls: string[] }) => {
-  const urlCapture = store.get('urlCapture', {});
-  const sets = urlCapture.savedUrlSets ?? [];
-  const id = Date.now().toString();
-  sets.push({ id, name, urls, createdAt: Date.now() });
-  store.set('urlCapture', { ...urlCapture, savedUrlSets: sets });
-  return sets;
+  try {
+    if (!name || !name.trim()) {
+      throw new Error('Name is required');
+    }
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      throw new Error('At least one URL is required');
+    }
+    
+    const urlCapture = store.get('urlCapture', {});
+    const sets = urlCapture.savedUrlSets ?? [];
+    const id = Date.now().toString();
+    sets.push({ id, name: name.trim(), urls, createdAt: Date.now() });
+    store.set('urlCapture', { ...urlCapture, savedUrlSets: sets });
+    console.log('URL set saved:', { id, name: name.trim(), urlCount: urls.length });
+    return sets;
+  } catch (error) {
+    console.error('Error saving URL set:', error);
+    throw error;
+  }
 });
 
 ipcMain.handle('delete-url-set', async (event, id: string) => {

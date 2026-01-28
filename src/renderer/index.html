@@ -161,9 +161,111 @@
           role="tabpanel"
           aria-labelledby="screenshotTabBtn">
           <div class="screenshot-container">
+            <!-- Shared Configuration Section -->
+            <div class="screenshot-section" id="sharedConfigSection">
+              <h2 class="section-title">Capture Settings</h2>
+              
+              <div class="form-group">
+                <label>Capture Mode</label>
+                <div class="form-row">
+                  <div class="form-checkbox">
+                    <input type="radio" name="sharedCaptureMode" id="sharedCaptureModeCustom" value="custom" checked />
+                    <label for="sharedCaptureModeCustom">Custom Size</label>
+                  </div>
+                  <div class="form-checkbox">
+                    <input type="radio" name="sharedCaptureMode" id="sharedCaptureModePresets" value="presets" />
+                    <label for="sharedCaptureModePresets">Preset Sizes</label>
+                  </div>
+                </div>
+              </div>
+
+              <div id="sharedCustomSizeGroup" class="form-group">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="sharedWidth">Width (px)</label>
+                    <input
+                      type="number"
+                      id="sharedWidth"
+                      class="form-input"
+                      value="1200"
+                      min="100"
+                      max="4000" />
+                  </div>
+                  <div class="form-group">
+                    <label for="sharedHeight">Height (px)</label>
+                    <input
+                      type="number"
+                      id="sharedHeight"
+                      class="form-input"
+                      value="630"
+                      min="100"
+                      max="4000" />
+                  </div>
+                </div>
+              </div>
+
+              <div id="sharedPresetSizeGroup" class="form-group" style="display: none;">
+                <label>Select Screen Sizes</label>
+                <div class="preset-checkboxes">
+                  <div class="form-checkbox">
+                    <input type="checkbox" id="sharedPresetMobile" value="mobile" />
+                    <label for="sharedPresetMobile">Mobile (375×667)</label>
+                  </div>
+                  <div class="form-checkbox">
+                    <input type="checkbox" id="sharedPresetTablet" value="tablet" />
+                    <label for="sharedPresetTablet">Tablet (768×1024)</label>
+                  </div>
+                  <div class="form-checkbox">
+                    <input type="checkbox" id="sharedPresetLaptop" value="laptop" />
+                    <label for="sharedPresetLaptop">Laptop (1366×768)</label>
+                  </div>
+                  <div class="form-checkbox">
+                    <input type="checkbox" id="sharedPresetDesktop" value="desktop" />
+                    <label for="sharedPresetDesktop">Desktop (1920×1080)</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="sharedWait">Wait Strategy</label>
+                <select id="sharedWait" class="form-input">
+                  <option value="load">load</option>
+                  <option value="domcontentloaded">domcontentloaded</option>
+                  <option value="networkidle0">networkidle0</option>
+                  <option value="networkidle2">networkidle2</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="sharedExtraWait">Extra Wait (ms)</label>
+                <input
+                  type="number"
+                  id="sharedExtraWait"
+                  class="form-input"
+                  value="0"
+                  min="0"
+                  max="10000" />
+              </div>
+
+              <div class="form-row">
+                <div class="form-checkbox">
+                  <input type="checkbox" id="sharedFullPage" />
+                  <label for="sharedFullPage">Full Page</label>
+                </div>
+                <div class="form-checkbox">
+                  <input type="checkbox" id="sharedLight" />
+                  <label for="sharedLight">Light Mode (block images/CSS/fonts)</label>
+                </div>
+              </div>
+            </div>
+
             <!-- Single Capture Section -->
-            <div class="screenshot-section" id="singleCaptureSection">
-              <h2 class="section-title">Single Capture</h2>
+            <div class="collapsible-section" id="singleCaptureSection">
+              <div class="section-header" id="singleCaptureHeader">
+                <h2 class="section-title">Single Capture</h2>
+                <span class="section-chevron">▼</span>
+              </div>
+              <div class="section-content">
 
               <div class="screenshot-layout">
                 <div class="screenshot-form-column">
@@ -175,101 +277,6 @@
                       class="form-input"
                       placeholder="https://example.com"
                       required />
-                  </div>
-
-                  <div class="form-group">
-                    <label>Capture Mode</label>
-                    <div class="form-row">
-                      <div class="form-checkbox">
-                        <input type="radio" name="captureMode" id="captureModeCustom" value="custom" checked />
-                        <label for="captureModeCustom">Custom Size</label>
-                      </div>
-                      <div class="form-checkbox">
-                        <input type="radio" name="captureMode" id="captureModePresets" value="presets" />
-                        <label for="captureModePresets">Preset Sizes</label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div id="customSizeGroup" class="form-group">
-                    <div class="form-row">
-                      <div class="form-group">
-                        <label for="screenshotWidth">Width (px)</label>
-                        <input
-                          type="number"
-                          id="screenshotWidth"
-                          class="form-input"
-                          value="1200"
-                          min="100"
-                          max="4000" />
-                      </div>
-                      <div class="form-group">
-                        <label for="screenshotHeight">Height (px)</label>
-                        <input
-                          type="number"
-                          id="screenshotHeight"
-                          class="form-input"
-                          value="630"
-                          min="100"
-                          max="4000" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div id="presetSizeGroup" class="form-group" style="display: none;">
-                    <label>Select Screen Sizes</label>
-                    <div class="preset-checkboxes">
-                      <div class="form-checkbox">
-                        <input type="checkbox" id="presetMobile" value="mobile" />
-                        <label for="presetMobile">Mobile (375×667)</label>
-                      </div>
-                      <div class="form-checkbox">
-                        <input type="checkbox" id="presetTablet" value="tablet" />
-                        <label for="presetTablet">Tablet (768×1024)</label>
-                      </div>
-                      <div class="form-checkbox">
-                        <input type="checkbox" id="presetLaptop" value="laptop" />
-                        <label for="presetLaptop">Laptop (1366×768)</label>
-                      </div>
-                      <div class="form-checkbox">
-                        <input type="checkbox" id="presetDesktop" value="desktop" />
-                        <label for="presetDesktop">Desktop (1920×1080)</label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="screenshotWait">Wait Strategy</label>
-                    <select id="screenshotWait" class="form-input">
-                      <option value="load">load</option>
-                      <option value="domcontentloaded">domcontentloaded</option>
-                      <option value="networkidle0">networkidle0</option>
-                      <option value="networkidle2">networkidle2</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="screenshotExtraWait">Extra Wait (ms)</label>
-                    <input
-                      type="number"
-                      id="screenshotExtraWait"
-                      class="form-input"
-                      value="0"
-                      min="0"
-                      max="10000" />
-                  </div>
-
-                  <div class="form-row">
-                    <div class="form-checkbox">
-                      <input type="checkbox" id="screenshotFullPage" />
-                      <label for="screenshotFullPage">Full Page</label>
-                    </div>
-                    <div class="form-checkbox">
-                      <input type="checkbox" id="screenshotLight" />
-                      <label for="screenshotLight"
-                        >Light Mode (block images/CSS/fonts)</label
-                      >
-                    </div>
                   </div>
 
                   <button id="captureBtn" class="btn btn-primary">
@@ -327,11 +334,16 @@
                   </div>
                 </div>
               </div>
+              </div>
             </div>
 
             <!-- Batch Capture Section -->
-            <div class="screenshot-section" id="batchCaptureSection">
-              <h2 class="section-title">Batch Capture</h2>
+            <div class="collapsible-section collapsed" id="batchCaptureSection">
+              <div class="section-header" id="batchCaptureHeader">
+                <h2 class="section-title">Batch Capture</h2>
+                <span class="section-chevron">▶</span>
+              </div>
+              <div class="section-content">
 
               <div class="screenshot-layout">
                 <div class="screenshot-form-column">
@@ -355,55 +367,6 @@
                       </select>
                     </div>
                     <ul id="savedUrlSetsList" class="saved-url-sets-list" aria-label="Saved URL sets"></ul>
-                  </div>
-
-                  <div class="form-row">
-                    <div class="form-group">
-                      <label for="batchWidth">Width (px)</label>
-                      <input
-                        type="number"
-                        id="batchWidth"
-                        class="form-input"
-                        value="1200" />
-                    </div>
-                    <div class="form-group">
-                      <label for="batchHeight">Height (px)</label>
-                      <input
-                        type="number"
-                        id="batchHeight"
-                        class="form-input"
-                        value="630" />
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="batchWait">Wait Strategy</label>
-                    <select id="batchWait" class="form-input">
-                      <option value="load">load</option>
-                      <option value="domcontentloaded">domcontentloaded</option>
-                      <option value="networkidle0">networkidle0</option>
-                      <option value="networkidle2">networkidle2</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="batchExtraWait">Extra Wait (ms)</label>
-                    <input
-                      type="number"
-                      id="batchExtraWait"
-                      class="form-input"
-                      value="0" />
-                  </div>
-
-                  <div class="form-row">
-                    <div class="form-checkbox">
-                      <input type="checkbox" id="batchFullPage" />
-                      <label for="batchFullPage">Full Page</label>
-                    </div>
-                    <div class="form-checkbox">
-                      <input type="checkbox" id="batchLight" />
-                      <label for="batchLight">Light Mode</label>
-                    </div>
                   </div>
 
                   <button id="captureBatchBtn" class="btn btn-primary">
@@ -434,6 +397,7 @@
                     </div>
                   </div>
                 </div>
+              </div>
               </div>
             </div>
           </div>

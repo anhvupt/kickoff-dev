@@ -110,10 +110,8 @@ const sharedPresetLaptop = document.getElementById('sharedPresetLaptop');
 const sharedPresetDesktop = document.getElementById('sharedPresetDesktop');
 const sharedWidth = document.getElementById('sharedWidth');
 const sharedHeight = document.getElementById('sharedHeight');
-const sharedWait = document.getElementById('sharedWait');
 const sharedExtraWait = document.getElementById('sharedExtraWait');
 const sharedFullPage = document.getElementById('sharedFullPage');
-const sharedLight = document.getElementById('sharedLight');
 
 // Unified Capture
 const screenshotError = document.getElementById('screenshotError');
@@ -442,9 +440,9 @@ captureBatchBtn.addEventListener('click', async () => {
             url,
             presets: [presetKey],
             fullPage: sharedFullPage.checked,
-            wait: sharedWait.value,
+            wait: 'load',
             extraWait: parseInt(sharedExtraWait.value) || 0,
-            light: sharedLight.checked
+            light: false
           });
 
           const screenshotResult = result[0];
@@ -566,9 +564,9 @@ captureBatchBtn.addEventListener('click', async () => {
         width: parseInt(sharedWidth.value) || 1200,
         height: parseInt(sharedHeight.value) || 630,
         fullPage: sharedFullPage.checked,
-        wait: sharedWait.value,
+        wait: 'load',
         extraWait: parseInt(sharedExtraWait.value) || 0,
-        light: sharedLight.checked
+        light: false
       });
 
       const screenshotResult = result[0];

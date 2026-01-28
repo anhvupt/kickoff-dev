@@ -27,9 +27,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
     extraWait?: number;
     light?: boolean;
   }) => ipcRenderer.invoke('capture-screenshots-batch', data),
+  captureScreenshotPresets: (data: {
+    url: string;
+    presets: string[];
+    fullPage?: boolean;
+    wait?: string;
+    extraWait?: number;
+    light?: boolean;
+  }) => ipcRenderer.invoke('capture-screenshot-presets', data),
   saveScreenshot: (data: { buffer: ArrayBuffer; filename?: string }) =>
     ipcRenderer.invoke('save-screenshot', data),
   getImagePreview: (imagePath: string) =>
     ipcRenderer.invoke('get-image-preview', imagePath),
+  startScreenSelection: () => ipcRenderer.invoke('start-screen-selection'),
+  onScreenSelectionResult: (callback: (result: any) => void) => {
+    ipcRenderer.on('screen-selection-result', (_event, result) => callback(result));
+  },
 });
 

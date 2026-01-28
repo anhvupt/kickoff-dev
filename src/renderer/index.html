@@ -34,6 +34,16 @@
           <span class="tab-icon">📸</span>
           Screenshot Capture
         </button>
+        <button
+          class="tab-btn"
+          data-tab="screenSelection"
+          role="tab"
+          aria-selected="false"
+          aria-controls="screenSelectionTab"
+          id="screenSelectionTabBtn">
+          <span class="tab-icon">🖥️</span>
+          Screen Selection
+        </button>
       </div>
 
       <main class="app-main">
@@ -177,26 +187,64 @@
                       required />
                   </div>
 
-                  <div class="form-row">
-                    <div class="form-group">
-                      <label for="screenshotWidth">Width (px)</label>
-                      <input
-                        type="number"
-                        id="screenshotWidth"
-                        class="form-input"
-                        value="1200"
-                        min="100"
-                        max="4000" />
+                  <div class="form-group">
+                    <label>Capture Mode</label>
+                    <div class="form-row">
+                      <div class="form-checkbox">
+                        <input type="radio" name="captureMode" id="captureModeCustom" value="custom" checked />
+                        <label for="captureModeCustom">Custom Size</label>
+                      </div>
+                      <div class="form-checkbox">
+                        <input type="radio" name="captureMode" id="captureModePresets" value="presets" />
+                        <label for="captureModePresets">Preset Sizes</label>
+                      </div>
                     </div>
-                    <div class="form-group">
-                      <label for="screenshotHeight">Height (px)</label>
-                      <input
-                        type="number"
-                        id="screenshotHeight"
-                        class="form-input"
-                        value="630"
-                        min="100"
-                        max="4000" />
+                  </div>
+
+                  <div id="customSizeGroup" class="form-group">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label for="screenshotWidth">Width (px)</label>
+                        <input
+                          type="number"
+                          id="screenshotWidth"
+                          class="form-input"
+                          value="1200"
+                          min="100"
+                          max="4000" />
+                      </div>
+                      <div class="form-group">
+                        <label for="screenshotHeight">Height (px)</label>
+                        <input
+                          type="number"
+                          id="screenshotHeight"
+                          class="form-input"
+                          value="630"
+                          min="100"
+                          max="4000" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="presetSizeGroup" class="form-group" style="display: none;">
+                    <label>Select Screen Sizes</label>
+                    <div class="preset-checkboxes">
+                      <div class="form-checkbox">
+                        <input type="checkbox" id="presetMobile" value="mobile" />
+                        <label for="presetMobile">Mobile (375×667)</label>
+                      </div>
+                      <div class="form-checkbox">
+                        <input type="checkbox" id="presetTablet" value="tablet" />
+                        <label for="presetTablet">Tablet (768×1024)</label>
+                      </div>
+                      <div class="form-checkbox">
+                        <input type="checkbox" id="presetLaptop" value="laptop" />
+                        <label for="presetLaptop">Laptop (1366×768)</label>
+                      </div>
+                      <div class="form-checkbox">
+                        <input type="checkbox" id="presetDesktop" value="desktop" />
+                        <label for="presetDesktop">Desktop (1920×1080)</label>
+                      </div>
                     </div>
                   </div>
 
@@ -266,6 +314,13 @@
                         Download PNG
                       </button>
                     </div>
+                  </div>
+                  <div
+                    id="presetResults"
+                    class="batch-results"
+                    style="display: none">
+                    <h3 id="presetResultsTitle">Results</h3>
+                    <div id="presetResultsGrid" class="batch-results-grid"></div>
                   </div>
                   <div
                     id="screenshotPreviewPlaceholder"
@@ -370,6 +425,83 @@
             </div>
           </div>
         </div>
+
+        <!-- Screen Selection Tab -->
+        <div
+          class="tab-content"
+          id="screenSelectionTab"
+          role="tabpanel"
+          aria-labelledby="screenSelectionTabBtn">
+          <div class="screenshot-container">
+            <div class="screenshot-section">
+              <h2 class="section-title">Screen Capture</h2>
+
+              <div class="screenshot-layout">
+                <div class="screenshot-form-column">
+                  <button id="startScreenSelectionBtn" class="btn btn-primary">
+                    <span class="btn-icon">🖥️</span>
+                    <span id="startSelectionBtnText">Start Selection</span>
+                  </button>
+
+                  <div
+                    id="screenSelectionError"
+                    class="error-alert"
+                    style="display: none"></div>
+                </div>
+
+                <div class="screenshot-preview-column">
+                  <div
+                    id="screenSelectionPreview"
+                    class="screenshot-preview"
+                    style="display: none">
+                    <h3>Preview</h3>
+                    <div
+                      class="preview-image-container"
+                      id="screenSelectionPreviewContainer">
+                      <img
+                        id="screenSelectionImage"
+                        alt="Screen selection preview" />
+                      <canvas id="screenSelectionBlurCanvas"></canvas>
+                    </div>
+                    <div class="preview-actions">
+                      <button
+                        id="copyScreenSelectionBtn"
+                        class="btn btn-success">
+                        <span class="btn-icon">📋</span>
+                        Copy to Clipboard
+                      </button>
+                      <button
+                        id="downloadScreenSelectionBtn"
+                        class="btn btn-success">
+                        <span class="btn-icon">💾</span>
+                        Download PNG
+                      </button>
+                      <button id="enableScreenBlurBtn" class="btn btn-primary">
+                        <span class="btn-icon">🔒</span>
+                        <span id="screenBlurBtnText">Select Area to Blur</span>
+                      </button>
+                      <button
+                        id="clearScreenBlurBtn"
+                        class="btn btn-warning"
+                        style="display: none">
+                        <span class="btn-icon">🗑️</span>
+                        Clear Blur
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    id="screenSelectionPreviewPlaceholder"
+                    class="screenshot-preview-placeholder">
+                    <div class="placeholder-content">
+                      <span class="placeholder-icon">🖥️</span>
+                      <p>Captured screen selection will appear here</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
 
@@ -383,5 +515,6 @@
 
     <script src="renderer.js"></script>
     <script src="screenshot.js"></script>
+    <script src="screen-selection.js"></script>
   </body>
 </html>
